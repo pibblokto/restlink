@@ -42,6 +42,10 @@ spec:
               slackNotification:
                 description: Slack notification config
                 properties:
+                  channel:
+                    description: Name of the slack channel where notification will
+                      appear
+                    type: string
                   notificationOverride:
                     description: Optional override of slack message in yaml format.
                       Override format can we checked here <url>
@@ -71,22 +75,22 @@ spec:
                     - namespace
                     type: object
                 required:
+                - channel
                 - webhookSecret
                 type: object
               source:
                 description: Configuration of source pods that trigger restart of
                   target pods.
                 properties:
+                  containerName:
+                    description: Name of the container within a pod that should we
+                      watched on restarts. This field is optional if pod has 1 container
+                    type: string
                   cooldownSeconds:
                     default: 60
                     description: Don't restart target pods within this timeframe even
                       if source pods were restarted within last RestartWithinSeconds
                     type: integer
-                  labels:
-                    additionalProperties:
-                      type: string
-                    description: Label selector for source pods
-                    type: object
                   namespace:
                     description: Namespace for source pods. If ommited CR's ns will
                       be used
@@ -101,28 +105,120 @@ spec:
                     description: Defines how many source pods should be restarted
                       before target pods are restarted
                     type: integer
+                  selector:
+                    description: Label selector for source pods
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector
+                          requirements. The requirements are ANDed.
+                        items:
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector
+                                applies to.
+                              type: string
+                            operator:
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  watchPodCreation:
+                    default: false
+                    description: Wether or not to consider pod creation as a restart
+                      event. Defaults to false
+                    type: boolean
                 required:
                 - cooldownSeconds
-                - labels
                 - restartWithinSeconds
                 - restartsThreshold
+                - selector
                 type: object
               targets:
                 description: List of targets (namespaces and label selectors) that
                   will be restarted if source pods get restarted.
                 items:
                   properties:
-                    labels:
-                      additionalProperties:
-                        type: string
-                      description: Label selector for target pods that will be restarted
-                      type: object
                     namespace:
                       description: Namespace for target pods that will be restarted.
                         If ommited CR's ns will be used
                       type: string
+                    selector:
+                      description: Label selector for target pods that will be restarted
+                      properties:
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector
+                            requirements. The requirements are ANDed.
+                          items:
+                            description: |-
+                              A label selector requirement is a selector that contains values, a key, and an operator that
+                              relates the key and values.
+                            properties:
+                              key:
+                                description: key is the label key that the selector
+                                  applies to.
+                                type: string
+                              operator:
+                                description: |-
+                                  operator represents a key's relationship to a set of values.
+                                  Valid operators are In, NotIn, Exists and DoesNotExist.
+                                type: string
+                              values:
+                                description: |-
+                                  values is an array of string values. If the operator is In or NotIn,
+                                  the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                  the values array must be empty. This array is replaced during a strategic
+                                  merge patch.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: atomic
+                            required:
+                            - key
+                            - operator
+                            type: object
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        matchLabels:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                            map is equivalent to an element of matchExpressions, whose key field is "key", the
+                            operator is "In", and the values array contains only "value". The requirements are ANDed.
+                          type: object
+                      type: object
+                      x-kubernetes-map-type: atomic
                   required:
-                  - labels
+                  - selector
                   type: object
                 type: array
             required:
