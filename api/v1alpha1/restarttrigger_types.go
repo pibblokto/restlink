@@ -29,11 +29,11 @@ type RtSource struct {
 
 	// Label selector for source pods
 	// +kubebuilder:validation:Required
-	Labels map[string]string `json:"labels"`
+	Selector metav1.LabelSelector `json:"selector"`
 
 	// Defines how many source pods should be restarted before target pods are restarted
 	// +kubebuilder:default=1
-	RestartsThreshold uint `json:"restartsThreshold"`
+	MinRestarts uint `json:"minRestarts"`
 
 	// Restart target pods only if source pods were restarted within this timeframe
 	// +kubebuilder:default=60
@@ -42,6 +42,14 @@ type RtSource struct {
 	// Don't restart target pods within this timeframe even if source pods were restarted within last RestartWithinSeconds
 	// +kubebuilder:default=60
 	CooldownSeconds uint `json:"cooldownSeconds"`
+
+	// Wether or not to consider pod creation as a restart event. Defaults to false
+	// +kubebuilder:default=false
+	WatchPodCreation bool `json:"watchPodCreation,omitempty"`
+
+	// Name of the container within a pod that should we watched on restarts
+	// +kubebuilder:validation:Required
+	ContainerName string `json:"containerName"`
 }
 
 type SecretRef struct {
@@ -50,8 +58,7 @@ type SecretRef struct {
 	Name string `json:"name"`
 
 	// Namespace of the Secret
-	// +kubebuilder:validation:Required
-	Namespace string `json:"namespace"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 type ConfigMapRef struct {
@@ -60,8 +67,7 @@ type ConfigMapRef struct {
 	Name string `json:"name"`
 
 	// Namespace of the ConfigMap
-	// +kubebuilder:validation:Required
-	Namespace string `json:"namespace"`
+	Namespace string `json:"namespace,omitempty"`
 }
 
 type RtTarget struct {
@@ -70,7 +76,7 @@ type RtTarget struct {
 
 	// Label selector for target pods that will be restarted
 	// +kubebuilder:validation:Required
-	Labels map[string]string `json:"labels"`
+	Selector metav1.LabelSelector `json:"selector"`
 }
 
 type SlackNotification struct {
@@ -80,6 +86,10 @@ type SlackNotification struct {
 
 	// Optional override of slack message in yaml format. Override format can we checked here <url>
 	NotificationOverride *ConfigMapRef `json:"notificationOverride,omitempty"`
+
+	// Name of the slack channel where notification will appear
+	// +kubebuilder:validation:Required
+	Channel string `json:"channel"`
 }
 
 // RestartTriggerSpec defines the desired state of RestartTrigger.
@@ -102,7 +112,7 @@ type RestartTriggerSpec struct {
 // RestartTriggerStatus defines the observed state of RestartTrigger.
 type RestartTriggerStatus struct {
 	// Last time the condition was evaluated (updated)
-	LastUpdated metav1.Time `json:"timestamp,omitempty"`
+	LastEvaluated metav1.Time `json:"timestamp,omitempty"`
 
 	// Whether the trigger condition was met
 	Triggered bool `json:"triggered,omitempty"`
