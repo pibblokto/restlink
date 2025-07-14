@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -27,26 +28,16 @@ type RestartTriggerReconciler struct {
 // +kubebuilder:rbac:groups=core.restlink.io,resources=restarttriggers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.restlink.io,resources=restarttriggers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core.restlink.io,resources=restarttriggers/finalizers,verbs=update
-
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the RestartTrigger object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.21.0/pkg/reconcile
+// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;delete
 func (r *RestartTriggerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
 
-	// Load RestartTrigger resource
 	var trig restartv1alpha1.RestartTrigger
 	if err := r.Get(ctx, req.NamespacedName, &trig); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// Build selectors
 	srcSel, _ := metav1.LabelSelectorAsSelector(&trig.Spec.Source.Selector)
 	srcNS := trig.Spec.Source.Namespace
 	if srcNS == "" {
@@ -132,6 +123,67 @@ func (r *RestartTriggerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	trig.Status.LastEvaluated = metav1.Time{Time: now}
 	if err := r.Status().Update(ctx, &trig); err != nil {
 		return ctrl.Result{}, err
+	}
+
+	if trig.Spec.SlackNotification != nil {
+		webhookSecret := types.NamespacedName{
+			Namespace: trig.Namespace,
+			Name:      trig.Spec.SlackNotification.WebhookSecret.Name,
+		}
+		var secret corev1.Secret
+		if err := r.Get(ctx, webhookSecret, &secret); err != nil {
+			l.Error(err, "unable to load Slack webhook secret")
+			return ctrl.Result{}, err
+		}
+		webhook := string(secret.Data["webhook"])
+
+		var srcInfos []helpers.PodInfo
+		for _, p := range srcPods.Items {
+			cause := "N/A"
+			if trig.Spec.Source.WatchPodCreation && p.CreationTimestamp.Time.After(since) {
+				cause = "PodCreation"
+			} else {
+				for _, cs := range p.Status.ContainerStatuses {
+					if cs.LastTerminationState.Terminated != nil &&
+						cs.LastTerminationState.Terminated.FinishedAt.Time.After(since) &&
+						cs.Name == trig.Spec.Source.ContainerName {
+						cause = "ContainerRestart"
+						break
+					}
+				}
+			}
+			srcInfos = append(srcInfos, helpers.PodInfo{
+				Name:      p.Name,
+				Namespace: p.Namespace,
+				Labels:    p.Labels,
+				Cause:     cause,
+			})
+		}
+
+		var tgtInfos []helpers.PodInfo
+		for _, name := range restarted {
+			tgtInfos = append(tgtInfos, helpers.PodInfo{
+				Name:      name,
+				Namespace: trig.Namespace,
+				Labels:    map[string]string{},
+				Cause:     "",
+			})
+		}
+
+		err := helpers.SendSlackAlert(ctx, helpers.SlackAlertConfig{
+			TriggerName:      trig.Name,
+			Channel:          trig.Spec.SlackNotification.Channel,
+			Webhook:          webhook,
+			Timestamp:        now.Format("2006-01-02 15:04:05"),
+			SourcePods:       srcInfos,
+			TargetPods:       tgtInfos,
+			IncludeNamespace: true,
+			IncludeLabels:    true,
+			ShowMoreEnabled:  true,
+		})
+		if err != nil {
+			l.Error(err, "failed to send Slack alert")
+		}
 	}
 
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil

@@ -61,15 +61,6 @@ type SecretRef struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
-type ConfigMapRef struct {
-	// Name of the ConfigMap
-	// +kubebuilder:validation:Required
-	Name string `json:"name"`
-
-	// Namespace of the ConfigMap
-	Namespace string `json:"namespace,omitempty"`
-}
-
 type RtTarget struct {
 	// Namespace for target pods that will be restarted. If ommited CR's ns will be used
 	Namespace string `json:"namespace,omitempty"`
@@ -83,9 +74,6 @@ type SlackNotification struct {
 	// Reference of a secret that holds slack webhook. The secret should have "webhook" key
 	// +kubebuilder:validation:Required
 	WebhookSecret SecretRef `json:"webhookSecret"`
-
-	// Optional override of slack message in yaml format. Override format can we checked here <url>
-	NotificationOverride *ConfigMapRef `json:"notificationOverride,omitempty"`
 
 	// Name of the slack channel where notification will appear
 	// +kubebuilder:validation:Required
