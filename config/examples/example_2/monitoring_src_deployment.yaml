@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-collector
+  namespace: telemetry
+  labels:
+    component: metrics-collector
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      component: metrics-collector
+  template:
+    metadata:
+      labels:
+        component: metrics-collector
+    spec:
+      containers:
+        - name: collector
+          image: nginx:latest
