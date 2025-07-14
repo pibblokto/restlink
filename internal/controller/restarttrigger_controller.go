@@ -30,6 +30,7 @@ type RestartTriggerReconciler struct {
 // +kubebuilder:rbac:groups=core.restlink.io,resources=restarttriggers/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;delete
+
 func (r *RestartTriggerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	l := log.FromContext(ctx)
 

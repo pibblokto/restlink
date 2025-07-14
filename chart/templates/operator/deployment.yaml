@@ -18,4 +18,3 @@ spec:
       containers:
       - name: {{ .Release.Name }}
         image: {{ printf "%s:%s" .Values.image .Values.tag }}
-

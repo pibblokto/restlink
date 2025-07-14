@@ -1,0 +1,18 @@
+apiVersion: core.restlink.io/v1alpha1
+kind: RestartTrigger
+metadata:
+  name: simple-restart
+  namespace: default
+spec:
+  source:
+    containerName: app
+    selector:
+      matchLabels:
+        app: source-app
+    minRestarts: 1
+    restartWithinSeconds: 60
+    cooldownSeconds: 60
+  targets:
+    - selector:
+        matchLabels:
+          app: target-app
