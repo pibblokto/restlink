@@ -39,14 +39,16 @@ func (r *RestartTriggerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	l.Info("reconciling RestartTrigger", "name", trig.Name)
+
 	srcSel, _ := metav1.LabelSelectorAsSelector(&trig.Spec.Source.Selector)
 	srcNS := trig.Spec.Source.Namespace
 	if srcNS == "" {
 		srcNS = trig.Namespace
 	}
 
-	tgtSels := make([]labels.Selector, 2)
-	tgtNss := make([]string, 2)
+	var tgtSels []labels.Selector
+	var tgtNss []string
 	for _, tgt := range trig.Spec.Targets {
 		tgtSel, _ := metav1.LabelSelectorAsSelector(&tgt.Selector)
 		tgtSels = append(tgtSels, tgtSel)

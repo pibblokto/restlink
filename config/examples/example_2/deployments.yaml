@@ -1,0 +1,83 @@
+# source
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-collector
+  namespace: telemetry
+  labels:
+    component: metrics-collector
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      component: metrics-collector
+  template:
+    metadata:
+      labels:
+        component: metrics-collector
+    spec:
+      containers:
+        - name: collector
+          image: nginx:latest
+          command:
+            - sh
+            - -c
+            - |
+              trap 'echo "collector stopped"; exit 1' TERM INT
+              echo "collector running..."; while true; do sleep 3600; done
+---
+# target
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluentd
+  namespace: logging
+  labels:
+    role: fluentd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: fluentd
+  template:
+    metadata:
+      labels:
+        role: fluentd
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          command:
+            - sh
+            - -c
+            - |
+              trap 'echo "fluentd pod stopped"; exit 1' TERM INT
+              while true; do sleep 3600; done
+---
+# target
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    role: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: alertmanager
+  template:
+    metadata:
+      labels:
+        role: alertmanager
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          command:
+            - sh
+            - -c
+            - |
+              trap 'echo "alertmanager pod stopped"; exit 1' TERM INT
+              while true; do sleep 3600; done
