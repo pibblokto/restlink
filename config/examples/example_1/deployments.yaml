@@ -1,0 +1,71 @@
+# source
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-collector
+  namespace: telemetry
+  labels:
+    component: metrics-collector
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: metrics-collector
+  template:
+    metadata:
+      labels:
+        component: metrics-collector
+    spec:
+      containers:
+        - name: collector
+          image: ubuntu
+          command: ["/bin/sh"]
+          args: ["-c", "sleep 60; exit 1"]
+---
+# target
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluentd
+  namespace: logging
+  labels:
+    role: fluentd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: fluentd
+  template:
+    metadata:
+      labels:
+        role: fluentd
+    spec:
+      containers:
+        - name: nginx
+          image: ubuntu
+          command: ["/bin/sh"]
+          args: ["-c", "sleep 3600"]
+---
+# target
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    role: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: alertmanager
+  template:
+    metadata:
+      labels:
+        role: alertmanager
+    spec:
+      containers:
+        - name: nginx
+          image: ubuntu
+          command: ["/bin/sh"]
+          args: ["-c", "sleep 3600"]

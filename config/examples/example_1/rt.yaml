@@ -1,0 +1,24 @@
+apiVersion: core.restlink.io/v1alpha1
+kind: RestartTrigger
+metadata:
+  name: multi-ns-restart
+  namespace: monitoring
+spec:
+  source:
+    containerName: collector
+    namespace: telemetry
+    selector:
+      matchLabels:
+        component: metrics-collector
+    minRestarts: 1
+    restartWithinSeconds: 120
+    cooldownSeconds: 300
+  targets:
+    - namespace: logging
+      selector:
+        matchLabels:
+          role: fluentd
+    - namespace: monitoring
+      selector:
+        matchLabels:
+          role: alertmanager
