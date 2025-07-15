@@ -19,7 +19,8 @@ spec:
       containers:
         - name: collector
           image: ubuntu
-          command: ["yes"]
+          command: ["/bin/sh"]
+          args: ["-c", "sleep 60; exit 1"]
 ---
 # target
 apiVersion: apps/v1
@@ -42,7 +43,8 @@ spec:
       containers:
         - name: nginx
           image: ubuntu
-          command: ["yes"]
+          command: ["/bin/sh"]
+          args: ["-c", "sleep 60; exit 1"]
 ---
 # target
 apiVersion: apps/v1
@@ -65,4 +67,5 @@ spec:
       containers:
         - name: nginx
           image: ubuntu
-          command: ["yes"]
+          command: ["/bin/sh"]
+          args: ["-c", "sleep 60; exit 1"]
