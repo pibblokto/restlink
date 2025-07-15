@@ -37,4 +37,4 @@ Since recreation is handled via pod deletion and further recreation of a pod by 
 | `.spec.source.cooldownSeconds` | Don’t trigger again for X s | `300` |
 | `.targets[]` | List of namespaces & selectors to restart | `role=fluentd` |
 
-Examples can be found in **config/examples**
+Examples can be found in [**config/examples**](https://github.com/pibblokto/restlink/tree/main/config/examples)
