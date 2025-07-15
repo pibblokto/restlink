@@ -1,18 +1,24 @@
 apiVersion: core.restlink.io/v1alpha1
 kind: RestartTrigger
 metadata:
-  name: simple-restart
-  namespace: default
+  name: multi-ns-restart
+  namespace: monitoring
 spec:
   source:
-    containerName: app
+    containerName: collector
+    namespace: telemetry
     selector:
       matchLabels:
-        app: source-app
+        component: metrics-collector
     minRestarts: 1
-    restartWithinSeconds: 60
-    cooldownSeconds: 60
+    restartWithinSeconds: 120
+    cooldownSeconds: 300
   targets:
-    - selector:
+    - namespace: logging
+      selector:
         matchLabels:
-          app: target-app
+          role: fluentd
+    - namespace: monitoring
+      selector:
+        matchLabels:
+          role: alertmanager
