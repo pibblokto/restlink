@@ -3,10 +3,10 @@
 Simple Kubernetes operator that **watches sourece pods** and, when
 they crash or restart too often, **automatically restarts target pods**.
 
-Since recreation is handeled via pod deletion and further recreation of a pod by its owner (e.g. Deployment), certain pods won't be deleted. Specifically those that have the following ownerRefs:
+Since recreation is handled via pod deletion and further recreation of a pod by its owner (e.g. Deployment), certain pods won't be deleted. Specifically those that have the following ownerRefs:
 
 - StatefulSets (since stateful application may be a bit too complex for by simple by-label deletion)
-- Jobs (since job already handeles lifecycle of a pod and external dependency may cause unexpected behaviour)
+- Jobs (since job already handles lifecycle of a pod and external dependency may cause unexpected behaviour)
 - Standalone pods with no onwerRef (since there is simply no one who can recreate standalone pod. However, in the future container-level restarts will be added)
 
 ---
