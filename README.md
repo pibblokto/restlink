@@ -16,7 +16,7 @@ Since recreation is handled via pod deletion and further recreation of a pod by 
 1. **Custom Resource** `RestartTrigger`    
    *define once – the operator does the rest*
 
-2. Operator runs reconcile loop every 30 s (and on relevant Pod events)  
+2. Operator runs reconciliation loop every 30 s (and on relevant Pod events)  
    - Count restarts or creations of *source* pods  
    - If `minRestarts` happened within `restartWithinSeconds` **and** cooldown
      passed → delete *target* pods
