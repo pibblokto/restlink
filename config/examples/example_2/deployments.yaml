@@ -44,7 +44,7 @@ spec:
         - name: nginx
           image: ubuntu
           command: ["/bin/sh"]
-          args: ["-c", "sleep 60; exit 1"]
+          args: ["-c", "sleep 3600"]
 ---
 # target
 apiVersion: apps/v1
@@ -68,4 +68,4 @@ spec:
         - name: nginx
           image: ubuntu
           command: ["/bin/sh"]
-          args: ["-c", "sleep 60; exit 1"]
+          args: ["-c", "sleep 3600"]
