@@ -10,7 +10,7 @@ spec:
     selector:
       matchLabels:
         component: metrics-collector
-    minRestarts: 2
+    minRestarts: 1
     restartWithinSeconds: 120
     cooldownSeconds: 300
   targets:

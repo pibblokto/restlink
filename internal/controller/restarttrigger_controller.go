@@ -39,8 +39,6 @@ func (r *RestartTriggerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	l.Info("reconciling RestartTrigger", "name", trig.Name)
-
 	srcSel, _ := metav1.LabelSelectorAsSelector(&trig.Spec.Source.Selector)
 	srcNS := trig.Spec.Source.Namespace
 	if srcNS == "" {

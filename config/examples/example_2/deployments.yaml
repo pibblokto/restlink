@@ -18,12 +18,11 @@ spec:
     spec:
       containers:
         - name: collector
-          image: nginx:latest
+          image: alpine
           command:
             - sh
             - -c
             - |
-              trap 'echo "collector stopped"; exit 1' TERM INT
               echo "collector running..."; while true; do sleep 3600; done
 ---
 # target
@@ -46,12 +45,11 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:latest
+          image: alpine
           command:
             - sh
             - -c
             - |
-              trap 'echo "fluentd pod stopped"; exit 1' TERM INT
               while true; do sleep 3600; done
 ---
 # target
@@ -74,10 +72,9 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: nginx:latest
+          image: alpine
           command:
             - sh
             - -c
             - |
-              trap 'echo "alertmanager pod stopped"; exit 1' TERM INT
               while true; do sleep 3600; done
