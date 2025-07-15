@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: collector
-          image: alpine
+          image: ubuntu
           command: ["sleep", "3600"]
 ---
 # target
@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: alpine
+          image: ubuntu
           command: ["sleep", "3600"]
 ---
 # target
@@ -64,5 +64,5 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: alpine
+          image: ubuntu
           command: ["sleep", "3600"]
