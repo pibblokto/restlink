@@ -43,6 +43,7 @@ spec:
         - name: nginx
           image: ubuntu
           command: ["yes"]
+---
 # target
 apiVersion: apps/v1
 kind: Deployment
