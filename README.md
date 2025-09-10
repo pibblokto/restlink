@@ -1,6 +1,6 @@
 # Restlink Restart Trigger Operator
 
-Simple Kubernetes operator that **watches sourece pods** and, when
+Simple Kubernetes operator that **watches source pods** and, when
 they crash or restart too often, **automatically restarts target pods**.
 
 Since recreation is handled via pod deletion and further recreation of a pod by its owner (e.g. Deployment), certain pods won't be deleted. Specifically those that have the following ownerRefs:
