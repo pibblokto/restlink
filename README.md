@@ -5,7 +5,7 @@ they crash or restart too often, **automatically restarts target pods**.
 
 Since recreation is handled via pod deletion and further recreation of a pod by its owner (e.g. Deployment), certain pods won't be deleted. Specifically those that have the following ownerRefs:
 
-- StatefulSets (since stateful application may be a bit too complex for by simple by-label deletion)
+- StatefulSets (since stateful application may be a bit too complex for simple by-label deletion)
 - Jobs (since job already handles lifecycle of a pod and external dependency may cause unexpected behaviour)
 - Standalone pods with no onwerRef (since there is simply no one who can recreate standalone pod. However, in the future container-level restarts will be added)
 
@@ -14,12 +14,12 @@ Since recreation is handled via pod deletion and further recreation of a pod by 
 ## How it works
 
 1. **Custom Resource** `RestartTrigger`    
-   *define once – the operator does the rest*
+   The only custom resource where source and target pods as well as cooldown interval, min restarts count, etc.
 
 2. Operator runs reconciliation loop every 30 s (and on relevant Pod events)  
    - Count restarts or creations of *source* pods  
    - If `minRestarts` happened within `restartWithinSeconds` **and** cooldown
-     passed → delete *target* pods
+     passed then *target* pods get deleted
 
 3. Deleting a pod makes its Deployment/ReplicaSet/etc recreate it.
 
